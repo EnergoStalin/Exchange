@@ -7,7 +7,7 @@ var loadAssets = function(callback) {
 			e: (function() {var e = new Image(); e.src = EnvironmentOptions.assets_url[i].url; return e;})()
 		});
 		EnvironmentOptions.assets[i].e.addEventListener("load",function() {
-			if(++total == EnvironmentOptions.assets_url.length) { callback(); console.log(total);}
+			if(++total == EnvironmentOptions.assets_url.length) { callback(); }
 		});
 	}
 }
@@ -69,6 +69,9 @@ function Clear(dx,dy,w,h) {
 		DrawRef.ctx.clearRect(dx,dy,w,h);
 	}
 }
+function Center(maxw,maxh,w,h) {
+	return {dx: (maxw - w) / 2,dy: (maxh - maxh)/2};
+}
 function AspectRatioFit(srcWidth, srcHeight, maxWidth, maxHeight) {
 	var ratio = Math.min(maxWidth / srcWidth, maxHeight / srcHeight);
 
@@ -79,29 +82,52 @@ var DrawBackground = function(i) {
 	var ratio = AspectRatioFit(EnvironmentOptions.assets[i].e.naturalWidth,EnvironmentOptions.assets[i].e.naturalHeight,DrawRef.width,DrawRef.height);
 	DrawRef.ctx.drawImage(EnvironmentOptions.assets[i].e, DrawRef.width / 2 - ratio.width / 2,DrawRef.height / 2 - ratio.height / 2,ratio.width,ratio.height);
 }
-Object.defineProperty(DrawRef,"line",{
-	value: function(nx,ny,tx,ty,options) {
-		this.ctx.save();
-		this.ctx.beginPath();
-		this.ctx.moveTo(nx,ny);
-		for(var o in options) {
-			this.ctx[o] = options[o];
+Object.defineProperties(DrawRef,{
+	"line": {
+		value: function(nx,ny,tx,ty,options) {
+			this.ctx.save();
+			this.ctx.beginPath();
+			this.ctx.moveTo(nx,ny);
+			for(var o in options) {
+				this.ctx[o] = options[o];
+			}
+			this.ctx.lineTo(tx,ty);
+			this.ctx.stroke();
+			this.ctx.closePath();
+			this.ctx.restore();
 		}
-		this.ctx.lineTo(tx,ty);
-		this.ctx.stroke();
-		this.ctx.closePath();
-		this.ctx.restore();
+	},
+	"arrow": {
+		value: function(x, y, tx, ty) {
+			var head = 10;
+			var dx = tx - x;
+			var dy = ty - y;
+			var angle = Math.atan2(dy, dx);
+			console.log(angle,dx,dy,head);
+			this.ctx.beginPath();
+			this.ctx.moveTo(x, y);
+			this.ctx.lineTo(tx, ty);
+			this.ctx.lineTo(tx - head * Math.cos(angle - Math.PI / 6), ty - head * Math.sin(angle - Math.PI / 6));
+			this.ctx.moveTo(tx, ty);
+			this.ctx.lineTo(tx - head * Math.cos(angle + Math.PI / 6), ty - head * Math.sin(angle + Math.PI / 6));
+			this.ctx.stroke();
+			this.closePath();
+		}
 	}
 });
 Object.defineProperty(Poly,"draw",{
 	value: function() {
-		var d = this.checkSize;
-		for(var i = 0; i < this.room.length; i++,d+=this.checkSize) {
+		var d = 0;
+		DrawRef.ctx.save();
+		var center = Center(DrawRef.width,DrawRef.height,this.checkSize*this.room[0].length,this.checkSize*this.room.length);
+		DrawRef.ctx.translate(center.dx,center.dy);
+		for(var i = 0; i <= this.room.length; i++,d+=this.checkSize) {
 			DrawRef.line(0,d,this.checkSize*this.room[0].length,d);
 		}
 		d = 0;
-		for(var k = 0; k < this.room[0].length; k++,d+=this.checkSize) {
+		for(var k = 0; k <= this.room[0].length; k++,d+=this.checkSize) {
 			DrawRef.line(d,0,d,this.checkSize*this.room.length);
 		}
+		DrawRef.ctx.restore();
 	}
 });

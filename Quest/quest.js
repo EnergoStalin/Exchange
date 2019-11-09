@@ -2,8 +2,8 @@ var SpeedUi = null;
 
 var Simulate = function() {
 	showMessage("Assets Loaded.");
-	showMessage("Background setted.");
-	Poly.init(30,20);
+	showMessage("Poly inited.","Humans at poly: " + SimulateOptions.humans);
+	Poly.init(prompt("Cols"),prompt("Rows"));
 	Poly.draw();
 }
 

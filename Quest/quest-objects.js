@@ -1,8 +1,13 @@
+var Human = function() {
+	this.keys = Math.round(Math.random()*5);
+}
+
 var Check = function() {
-	this.up = 0;
-	this.down = 0;
-	this.left = 0;
-	this.right = 0;
+	this.up = Math.round(Math.random()*2);
+	this.down = Math.round(Math.random()*2);
+	this.left = Math.round(Math.random()*2);
+	this.right = Math.round(Math.random()*2);
+	this.human = (Math.round(Math.random()) == 1) ? new Human() : null;
 
 	return this;
 }

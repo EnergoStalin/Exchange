@@ -1,17 +1,14 @@
 var SimulateOptions = {
 	speed: 1,
 	maxSpeed: 5,
-	minSpeed: 1
+	minSpeed: 1,
+	humans: 0
 }
 var EnvironmentOptions = {
 	assets_url: [
 		{
 			name: "background1",
 			url: "C:\\Users\\Alex\\Documents\\Wallpaper\\osu-hd-wallpapers.jpg"
-		},
-		{
-			name: "background2",
-			url: "C:\\Users\\Alex\\Documents\\Wallpaper\\Screenshot_2019-07-22-17-57-39-044_com.mi.android.globalFileexplorer.png"
 		},
 		{
 			name: "background3",
