@@ -1,0 +1,61 @@
+html {
+	overflow: hidden;
+}
+#viewport {
+	border: 1px solid black;
+	display: block;
+	margin: auto;
+}
+#ui-speed {
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 12px;
+	margin: 0px;
+	padding: 10px;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	border-right: 2px solid black;
+	border-bottom: 2px solid black;
+	border-radius: 0px 0px 5px 0px;
+	background: white;
+}
+.message-box {
+	position: absolute;
+	right: 20px;
+	top: 40px;
+	z-index: 1;
+	min-width: 200px;
+	max-width: 300px;
+	min-height: 50px;
+	max-width: 100px;
+	background: #00c4ff;
+	border: 2px groove #090363;
+	border-radius: 5px;
+	padding: 10px;
+	text-align: center;
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 12px;
+}
+.caption {
+	margin-top: 0px;
+	border-bottom: 2px solid #090363;
+	color: blueviolet;
+}
+.message {
+	text-align: left;
+}
+.slide-up {
+	animation-name: slide-up;
+	animation-duration: 2s;
+}
+
+@keyframes slide-up {
+	from {
+		right: 20px;
+		opacity: 1;
+	}
+	to {
+		right: -300px;
+		opacity: -1;
+	}
+}  
