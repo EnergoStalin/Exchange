@@ -22,7 +22,6 @@ class enemy {
 				//druid regen enemy health in range
 				//necromant summon skeletons
 				//skeleton big damage small health
-				friend int getExpFromEnemies(enemy &e, player &p);
 };
 class player {
 				/*          skills
@@ -52,7 +51,6 @@ class player {
 				unsigned int limit_break_time; //unlocking at 20 lvl default 3sec
 				usi lvl; //max 1000 def 1 exp to next lvl expands in ariphmetical progression start by 100
 				usi exp_gain; //upgadable
-				friend int getExpFromEnemies(enemy &e, player &p);
 				public:
 				void expand(int count); //expand inventory size
 }	;
@@ -94,10 +92,6 @@ class map {
 				 * many platforms
 				 */
 };
-
-//int getExpFromEnemies(enemy &e, player &p) {	
-//								return (e.lvl - p.lvl) * p.exp_gain;
-//}
 				
 int main() {
 								player p;
