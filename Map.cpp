@@ -1,19 +1,16 @@
-#include <fstream>
+#include <fstream>
 #include <iostream>
 
 using namespace std;
 
-class Tile {
-public:
-	Tile() : type('0') {}
-	Tile(char t) : type(t) {}
-	
-	char type; 
-};
-
 class Map {
 public:
-	Map(int w, int h) : w(w), h(h) {
+	Map() : w(0), h(0) {
+			this->arr = NULL;
+	}
+	Map(int w, int h) : Map() {
+		this->w = w;
+		this->h = h;
 		MakeMap();
 		FillMap();
 	}
@@ -25,11 +22,18 @@ public:
 		}
 	}
 	void MakeMap() {
+		if(this->arr != NULL) delete[] this->arr;
 		this->arr = new Tile*[this->h];
 		for(int i = 0; i < this->h; i++) {
 			this->arr[i] = new Tile[this->w];
 		}
 	}
+	void Size(int w, int h) {
+			this->w = w;
+			this->h = h;
+			MakeMap();
+			FillMap();
+		}
 	void Display() {
 		for(int i = 0; i < this->h; i++) {
 			for(int j = 0; j < this->w; j++) {
@@ -79,9 +83,6 @@ public:
 			}
 		}
 	}
-	int w;
-	int h;
-	Tile **arr;
 	~Map() {
 		for(int i = 0; i < this->h; i++) {
 			delete[] arr[i];
@@ -89,4 +90,14 @@ public:
 		delete[] arr;
 		cout << "Memory free." << endl;
 	}
+	private:
+			class Tile {
+				public:
+					Tile() : type('0') {}
+					Tile(char t) : type(t) {}
+					char type; 
+			};
+	int w;
+	int h;
+	Tile **arr;
 };
