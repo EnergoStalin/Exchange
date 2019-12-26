@@ -3,101 +3,126 @@
 
 using namespace std;
 
+enum TileType {
+	Plaints=1,
+	Mountian,
+	Lake,
+	River
+};
+
 class Map {
 public:
 	Map() : w(0), h(0) {
 			this->arr = NULL;
 	}
-	Map(int w, int h) : Map() {
-		this->w = w;
-		this->h = h;
-		MakeMap();
-		FillMap();
+	Map(string version,int w, int h) : Map() {
+		this->opt.version = version;
+		Size(w,h);
 	}
 	void FillMap() {
-		for(int i = 0; i < this->h; i++) {
-			for(int j = 0; j < this->w; j++) {
-				this->arr[i][j].type = '0';
+		for(int i = 0; i < opt.height; i++) {
+			for(int j = 0; j < opt.width; j++) {
+				this->arr[i][j].type = TileType::Plaints;
 			}
 		}
 	}
+	void changeVersion(string nver) {
+			this->opt.version = nver;
+		}
 	void MakeMap() {
 		if(this->arr != NULL) delete[] this->arr;
-		this->arr = new Tile*[this->h];
-		for(int i = 0; i < this->h; i++) {
-			this->arr[i] = new Tile[this->w];
+		this->arr = new Tile*[opt.height];
+		for(int i = 0; i < opt.height; i++) {
+			this->arr[i] = new Tile[opt.width];
 		}
-	}
+		}
 	void Size(int w, int h) {
-			this->w = w;
-			this->h = h;
+			opt.width = w;
+			opt.height = h;
 			MakeMap();
 			FillMap();
 		}
 	void Display() {
-		for(int i = 0; i < this->h; i++) {
-			for(int j = 0; j < this->w; j++) {
+		for(int i = 0; i < opt.height; i++) {
+			for(int j = 0; j < opt.width; j++) {
 				cout << this->arr[i][j].type << ' ';
 			} cout << endl;
 		}
-	}
+		}
 	void FromFile(string path) {
-		ifstream file(path.c_str());
+		ifstream file(path.c_str(),ios::in | ios::binary);
 		if(file.is_open()) {
-			string line;
-			int X = 0, Y = 0;
-			while(getline(file,line)) {
-				if(line.length() == this->w) {
-					for(;X < line.length(); X++) {
-						this->arr[Y][X].type = line[X];
+				file.read((char*)&opt,sizeof(Option));
+				MakeMap();
+				for(int i = 0; i < opt.height; i++) {
+					for(int j = 0; j < opt.width; j++) {
+						file.read((char*)&this->arr[i][j],sizeof(Tile));
 					}
-					Y++;
-					X = 0;
-				} else  {
-					cerr << "Dont map." << endl;
-					break;	
 				}
-			} file.close();
+				cout << "File readed." << endl;
+			  file.close();
 		} else cerr << "Fail to open file." << endl;
 	}
 	void Save(string path) {
 		ofstream file (path.c_str(), ios_base::trunc);
 		file.close();
-		file.open(path.c_str(), ios_base::out);
+		file.open(path.c_str(), ios::out | ios::binary);
 		if(file.is_open()) {
-			for(int i = 0; i < this->h; i++) {
-				for(int j = 0; j < this->w; j++) {
-					file << this->arr[i][j].type;
-				} file << endl;
+			file.write((char*)&opt,sizeof(Option));
+			for(int i = 0; i < opt.height; i++) {
+					for(int j = 0; j < opt.width; j++) {
+						file.write((char*)&this->arr[i][j],sizeof(Tile));
+					}
 			}
 			file.close();
 			cout << "Saved." << endl;
-		} else cerr << "Save error." << endl;
+		} else cerr << "Cant open file." << endl;
 	}
-	void FillRect(int x, int y, int w, int h, char type) {
-		for(int i = 0; i < this->h; i++) {
-			for(int j = 0; j < this->w; j++) {
+	void FillRect(int x, int y, int w, int h, TileType type) {
+		for(int i = 0; i < opt.height; i++) {
+			for(int j = 0; j < opt.width; j++) {
 				if(((i >= y) && (j >= x)) && ((i <= (y+(h-1))) && (j <= (x+(w-1))))) {
 					this->arr[i][j].type = type;
 				}
 			}
 		}
-	}
+}
+	void GetMapInfo() {
+			cout << "Map version: " << opt.version << endl;
+				cout << "Rows:" << opt.width << endl;
+				cout << "Cols: " << opt.height << endl;
+		}
 	~Map() {
-		for(int i = 0; i < this->h; i++) {
+		for(int i = 0; i < opt.height; i++) {
 			delete[] arr[i];
 		}
-		delete[] arr;
-		cout << "Memory free." << endl;
+		delete[] arr;
 	}
 	private:
+			class Option {
+				public:
+					Option() {
+						version = "0.1";
+						width = 0;
+						height = 0;
+					}
+					Option(string v,int w,int h) {
+						version = v;
+						width = w;
+						height = h;
+					}
+					string version;
+					int width;
+					int height;
+			};
 			class Tile {
 				public:
-					Tile() : type('0') {}
-					Tile(char t) : type(t) {}
-					char type; 
+					Tile() : type(TileType::Plaints) {}
+					Tile(TileType t) : type(t) {}
+					TileType type; 
 			};
 	int w;
 	int h;
+	Option opt;
 	Tile **arr;
-};
+};
