@@ -1,4 +1,4 @@
-#include <fstream>
+#include <fstream>
 #include <iostream>
 
 using namespace std;
@@ -96,7 +96,8 @@ public:
 		for(int i = 0; i < opt.height; i++) {
 			delete[] arr[i];
 		}
-		delete[] arr;
+		delete[] arr;
+
 	}
 	private:
 			class Option {
@@ -118,11 +119,13 @@ public:
 			class Tile {
 				public:
 					Tile() : type(TileType::Plaints) {}
-					Tile(TileType t) : type(t) {}
+					Tile(TileType t) : type(t) {}
+
 					TileType type; 
 			};
 	int w;
 	int h;
 	Option opt;
-	Tile **arr;
-};
+	Tile **arr;
+
+};
