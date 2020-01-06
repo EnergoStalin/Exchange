@@ -4,7 +4,7 @@
 using namespace std;
 
 enum TileType {
-	Plaints=1,
+	Plaints=0,
 	Mountian,
 	Lake,
 	River
@@ -15,8 +15,10 @@ public:
 	Map() : w(0), h(0) {
 			this->arr = NULL;
 	}
-	Map(string version,int w, int h) : Map() {
-		this->opt.version = version;
+	Map(string version) : Map() {
+			this->opt.version = version;
+	}
+	Map(string version,int w, int h) : Map(version) {
 		Size(w,h);
 	}
 	void FillMap() {
@@ -28,27 +30,27 @@ public:
 	}
 	void changeVersion(string nver) {
 			this->opt.version = nver;
-		}
+	}
 	void MakeMap() {
 		if(this->arr != NULL) delete[] this->arr;
 		this->arr = new Tile*[opt.height];
 		for(int i = 0; i < opt.height; i++) {
 			this->arr[i] = new Tile[opt.width];
 		}
-		}
+	}
 	void Size(int w, int h) {
 			opt.width = w;
 			opt.height = h;
 			MakeMap();
 			FillMap();
-		}
+	}
 	void Display() {
 		for(int i = 0; i < opt.height; i++) {
 			for(int j = 0; j < opt.width; j++) {
 				cout << this->arr[i][j].type << ' ';
 			} cout << endl;
 		}
-		}
+	}
 	void FromFile(string path) {
 		ifstream file(path.c_str(),ios::in | ios::binary);
 		if(file.is_open()) {
@@ -81,11 +83,10 @@ public:
 	void FillRect(int x, int y, int w, int h, TileType type) {
 		for(int i = 0; i < opt.height; i++) {
 			for(int j = 0; j < opt.width; j++) {
-				if(((i >= y) && (j >= x)) && ((i <= (y+(h-1))) && (j <= (x+(w-1))))) {
-					this->arr[i][j].type = type;
-				}
-			}
+				if(((i >= y) && (j >= x)) && ((i <= (y+(h-1))) && (j <= (x+(w-1)))))
+					this->arr[i][j].type = type;
 		}
+	}
 }
 	void GetMapInfo() {
 			cout << "Map version: " << opt.version << endl;
@@ -119,7 +120,7 @@ public:
 				public:
 					Tile() : type(TileType::Plaints) {}
 					Tile(TileType t) : type(t) {}
-					TileType type; 
+					TileType type;
 			};
 	int w;
 	int h;
