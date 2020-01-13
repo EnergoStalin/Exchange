@@ -11,6 +11,18 @@ Game::~Game()
 				}
 }
 //Functions
+//load config
+void Game::loadConfig()
+{
+				ifstream is("app.txt");
+				
+				if(is.is_open())
+				{
+								string buff = "";
+								getline(is,buff,'\n');
+								this->clear = 
+				}
+}
 //initStates
 void Game::initStates()
 {
@@ -34,6 +46,7 @@ void Game::updateInput()
 				getline(cin,input,'\n');
 				
 				this->states.top()->update(input);
+				system(this->clear);
 }
 
 //Update

@@ -7,6 +7,10 @@ MainMenuState::~MainMenuState()
 				
 }
 //Functions
+void MainMenuState::printMenu()
+{
+				
+}
 //update
 void MainMenuState::update(string &input)
 {

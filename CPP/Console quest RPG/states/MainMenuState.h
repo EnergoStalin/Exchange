@@ -9,6 +9,7 @@ class MainMenuState : public State
 								MainMenuState();
 								virtual ~MainMenuState();
 								void update(string &input);
+								void printMenu();
 };
 
 #include "main_menu_state.cpp"

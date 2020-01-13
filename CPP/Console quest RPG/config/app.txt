@@ -1,0 +1,2 @@
+#command to clear screen configure for you os
+clearing-command: clear;

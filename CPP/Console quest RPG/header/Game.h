@@ -6,6 +6,7 @@
 #include <map>
 #include <stack>
 #include <cstdlib>
+#inclide <fstream>
 
 using namespace std;
 
@@ -16,8 +17,10 @@ class Game
 				//Variables
 				bool running = true;
 				stack<State*> states;
+				string clear;
 				
 				//Functions
+				void loadConfig();
 				void initStates();
 				void update();
 				void updateInput();
