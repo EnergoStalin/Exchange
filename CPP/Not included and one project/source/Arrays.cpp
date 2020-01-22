@@ -6,7 +6,7 @@ using std::cout;
 using std::endl;
 
 namespace ArrayTools {
-	enum OutputFormat //For function ShowArray()
+	enum ArrayOutputFormat //For function ShowArray()
 	{
 		ARRAY_DEFAULT=0,
 		ARRAY_LINE,
@@ -21,8 +21,8 @@ namespace ArrayTools {
 	}
 
 	template<typename T>
-	void show_array(const T arr[], const int size, const int format = DEFAULT) {
-		if(format == DEFAULT) {
+	void show_array(const T arr[], const int size, const int format = ARRAY_DEFAULT) {
+		if(format == ARRAY_DEFAULT) {
 			for(int i = 0; i < size; i++) {
 				cout << "I - " << (i + 1) << "\tValue: " << arr[i] << "\tAt: " << (arr+i) << endl;
 			}
@@ -87,7 +87,7 @@ namespace ArrayTools {
 	}
 	
 	template<typename T>
-	T* link_Array(const T arr1[], const T arr2[], const int size1, const int size2) {
+	T* link_array(const T arr1[], const T arr2[], const int size1, const int size2) {
 		T *arr3 = new T[size1 + size2];
 		for(int i = 0; i < size1; i++) {
 			arr3[i] = arr1[i];
@@ -96,14 +96,5 @@ namespace ArrayTools {
 			arr3[k] = arr2[j];
 		}
 		return arr3;
-	}
-	template<typename T>
-	T flip_array(T &arr, int length) {
-		T array[length];
-		for(int i = length, k = 0; i >= 0, k <= length; i--,k++) {
-			array[k] = arr[i];
-		}
-
-		return array;
-	}
+	}
 }
