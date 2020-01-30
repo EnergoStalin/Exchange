@@ -1,34 +1,47 @@
 #include <iostream>
-#include "Arrays.cpp"
+//#include "Arrays.cpp"
+//#define DEBUG
 #include "arg.cpp"
 
-using namespace ArrayTools;
+//using namespace ArrayTools;
 
 int main(int argc, char **argv) {
 	Arg arg(argc,argv);
-	if(arg.has("-quit"))
+	char *parse = arg.find("--parse");
+	char *sep = arg.find("--sep");
+	char *start_with = arg.find("--from");
+	if(parse && sep)
 	{
-		cout << "Has Quit.\n";
-
-		return 0;
+		int start_with_i = 0;
+		if(start_with && is_digit(start_with))
+		{
+			start_with_i = atoi(start_with);
+		}
+		else
+		{
+			std::cout << "Warning: \"" << start_with << "\" Don't digit passed as 0.\n";
+		}
+		int len = len4str(parse);
+		if(start_with_i < 0 || start_with_i > len)
+		{
+			std::cout << "Warning: Invalid option --from: Exception out of bounds " << start_with_i << '/' << len << " passed as 0.\n";
+			start_with_i = 0;
+		}
+		char *obj = getObject(start_with_i,parse,*sep);
+		if(obj)
+		{
+			std::cout << obj << '\n';
+		}
+		else
+		{
+			std::cout << "Cant parse string.\n";
+		}
+		delete []obj;
+	}
+	else
+	{
+		std::cout << "Please input --parse --sep and --from option.\n";
 	}
 
-	int size = 10;
-	int *arr = new int[size];
-	int *arr2 = new int[size];
-	
-	fill_int_array(arr2,size);
-	fill_int_array(arr,size);
-	int *arr3 = link_array(arr,arr2,size,size);
-	show_array(arr,size,ARRAY_LINE);
-	show_array(arr2,size,ARRAY_LINE);
-	int size2 = size*2;
-	push_back_array(arr3,size2,999);
-	show_array(arr3,size2,ARRAY_LINE);
-				
-	delete []arr;
-	delete []arr2;
-	delete []arr3;
-				
 	return 0;
 }
