@@ -1,0 +1,107 @@
+#!/bin/bash
+
+osu=/storage/emulated/0/osu\!droid
+root=/root/Documents/Osu!maps
+
+function clear() {
+	null=$( { rm *.osz; } 2>&1)
+}
+
+function startup() {
+	error=$( { adb start-server; } 1>&2 )
+
+    echo $error
+}
+
+function cleanup() {
+	null=$( { adb kill-server; } 2>&1)
+}
+
+function unpack() {
+	error=""
+	if [ "${1##*.}" != "rar" ] && [ "${1##*.}" != "zip" ] && [ "${1##*.}" != "7z" ]; then
+		echo "No known archive format..."
+		exit 1
+	fi
+	if [ "${1##*.}" == "rar" ]; then
+		error=$( { unrar e "$1"; } 1>&2 )
+	elif [ "${1##*.}" == "zip" ]; then
+		error=$( { unzip e "$1"; } 1>&2 )
+	elif [ "${1##*.}" == "7z" ]; then
+		error=$( { 7z e "$1"; } 1>&2 )
+	fi
+
+	echo -e "$error"
+}
+
+function push() {
+	error=$(startup)
+	error=$( { adb push --sync $root/*.osz $osu/Songs; } 1>&2 )
+	cleanup
+	if [ "$error" == "" ]; then
+		echo $error
+		clear
+		exit 1
+	fi
+    if [ "$2" == "clear" ]; then
+        clear
+    fi
+}
+
+if [ "$1" == "clear" ]; then
+	clear
+elif [ "$1" == "store" ]; then
+	(gnome-www-browser http://osu.ppy.sh/beatmapsets &> /dev/null &)
+elif [ "$1" == "list" ]; then
+	error=$( { adb start-server; } 1>&2 )
+	if [ -n "$2" ]; then
+		adb shell ls $osu/Songs | grep "$2"
+	else
+		adb shell ls $osu/Songs | grep -v .dat
+	fi
+	error=$( { adb kill-server; } 1>&2 )
+
+elif [ "$1" == "push" ]; then
+	push
+elif [ "$1" == "skin" ]; then
+	if [ -n "$2" ] && [ -n "$3" ] && [ "$2" == "add" ]; then
+		error="$(unpack $3)"
+		if ! [ -n "$error" ]; then
+			error=$(startup)
+			adb push --sync $root/${3%.*}/* "$osu/Skins/${3%.*}"
+		elif [ -d $3 ]; then
+			error=$(startup)
+			adb push --sync $root/${3%.*} "$osu/Skins/${3%.*}"
+		else
+			echo -e "Got an some error.\n$error"
+		fi
+
+		cleanup
+	elif [ -n "$2" ] && [ -n "$3" ] && [ "$2" == "set" ]; then
+		error=$(startup)
+		if ! [ -n "$error" ]; then
+			error=$(adb shell "cd $osu && if [ -d "./Skin" ]; then rm ./Skin/*; fi && cp ./Skins/$3/* ./Skin")
+			if [ -n "$error" ]; then
+				echo -e "Got some error.\n$error"
+				cleanup
+				exit 1
+			fi
+		fi
+		cleanup
+	fi
+elif [ "$1" == "pack" ] && [ -n "$2" ]; then
+	error="$(unpack $2)"
+	if [ -n "$error" ]; then
+		rm "$2"
+		push
+	else
+		echo -e "Cant extract file $2...\n$error"
+		exit 1
+	fi
+elif [ "$1" == "cleanup" ]; then
+	cleanup
+	null=$( { rm Beatmap Pack*; } 2>&1)
+	clear
+else
+	echo "No args passed..."
+fi
