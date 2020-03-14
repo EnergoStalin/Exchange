@@ -1,3 +1,18 @@
+/*
+*									Создано пользователем EnergoStalin.
+*										Распостроняется бесплатно.
+*
+*
+*	Все функции работают только с типом char*.
+*	Программа генерирующая псевдо рандомные числа при помощи функции rand() стандартной библиотеки std.
+*	Сщдержит дополнительные функции которые могут быть сипользованы в других проектах.
+*	Такие как int strlen(const char *) аналог функции int std::strlen() !!!(только для char*).
+*	bool is_int(const char*) проверяет целое ли число строка позже используется для валидации параметра
+*	функции atoi().
+*	bool CompareString(const char*,const char*) сравнивает две строки.
+*/
+
+
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
@@ -75,7 +90,7 @@ int main(int argc, char **argv)
 		break;
 		case 3:
 			if(!is_int(argv[2])) { std::cout << "Dont integer seed passed. Terminating...\n"; return 1; }
-			if(CompareString(argv[1],"-seed")) srand((unsigned)atoi(argv[2]));
+			if(CompareString(argv[1],"-s") || CompareString(argv[1],"s") || CompareString(argv[1],"-seed") || CompareString(argv[1],"seed")) srand((unsigned)atoi(argv[2]));
 			std::cout << rand() << '\n';
 		break;
 		case 4:
@@ -86,7 +101,7 @@ int main(int argc, char **argv)
 				std::cout << "Value out of range. Max value is " << USHRT_MAX << ".\n";
 				return 1;
 			}
-			if(CompareString(argv[1],"-seed") || CompareString(argv[1],"seed")) srand((unsigned)atoi(argv[2]));
+			if(CompareString(argv[1],"-s") || CompareString(argv[1],"s") || CompareString(argv[1],"-seed") || CompareString(argv[1],"seed")) srand((unsigned)atoi(argv[2]));
 			for(usi i = 0; i < atoi(argv[3]); i++)
 			{
 				std::cout << rand() << '\n';
