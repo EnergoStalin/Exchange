@@ -25,14 +25,17 @@ class Vertex
 
 class Obj
 {
-    std::vector<Vertex<float>> vv;
-    std::vector<Vertex<float>> vt;
-    std::vector<Vertex<float>> vn;
-	std::vector<Vertex<float>> vp;
-
-    std::string n; //name
-
     public:
+    class Polygon
+	{
+		public:
+			std::vector<int> vvi; 
+			std::vector<int> vti;
+			std::vector<int> vni;
+			std::vector<int> vpi;
+	};
+
+
     Obj();
     Obj(std::string);
     std::string &getName();
@@ -40,10 +43,30 @@ class Obj
     std::vector<Vertex<float>> &getVN();
     std::vector<Vertex<float>> &getVT();
 	std::vector<Vertex<float>> &getVP();
+	std::vector<Polygon> &getVF();
 	void pushVT(Vertex<float>&);
 	void pushVN(Vertex<float>&);
 	void pushVV(Vertex<float>&);
 	void pushVP(Vertex<float>&);
+	void pushVF(Polygon&);
+	void setName(std::string);
+
+	#ifdef __gl_h_
+		GLfloat *glVertexData = 0;
+		GLint *glIndexData = 0;
+		int vi = 0;
+		void glprepare();
+		void gldraw();
+	#endif
+
+	private:
+	std::vector<Vertex<float>> vv;
+    std::vector<Vertex<float>> vt;
+    std::vector<Vertex<float>> vn;
+	std::vector<Vertex<float>> vp;
+	std::vector<Polygon> vf;
+
+    std::string n; //name
 };
 
 class ObjGroup
@@ -59,8 +82,13 @@ class ObjGroup
 	bool empty();
 	int objCount();
 	Obj &top();
-	Obj *getObj(int);
     Obj *getObj(std::string);
+    std::vector<Obj>::iterator begin();
+    std::vector<Obj>::iterator end();
+    Obj &operator[](int); //Return obj by index (last == first) or null if not find
+    #ifdef __gl_h_
+    	void gldraw();
+	#endif
 };
 
 class ObjLoader
@@ -72,9 +100,11 @@ class ObjLoader
     ObjLoader(std::string);
     void load(std::string&);
     void load();
-    ObjGroup *getGroup(int);
-    ObjGroup *getGroup(std::string);
+    ObjGroup *getGroup(std::string); //Return group by name or null if not find
+    std::vector<ObjGroup>::iterator begin();
+    std::vector<ObjGroup>::iterator end();
 	int gCount();
+	ObjGroup &operator[](int); //Return group by index (last == first) or null if not find
 
     
 	class RWException
