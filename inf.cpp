@@ -1,26 +1,15 @@
-#define SIZE 20
-
-#include <iostream>
 #include "Arrays.cpp"
 
-using namespace ArrayTools;
-
-int main(int argc, char **argv)
+int main()
 {
-	int a[SIZE];
-	int min = 1000, j = 0;
+	int size = 5;
+	int *arr = new int[size];
 
-	FillIntArray(a,SIZE);
+	ArrayTools::fill_int(arr,size);
+	ArrayTools::rsort(arr,size);
+	ArrayTools::show(arr,size);
 
-	for(int i = 0; i < SIZE; i++)
-	{
-		if((a[i] % 2 == 0) && (a[i] > 0) && (a[i] <= min))
-		{
-			min = a[i];
-			j++;
-		}
-	}
-	std::cout << min << '\t' << j << '\n';
+	delete []arr;
 
 	return 0;
 }

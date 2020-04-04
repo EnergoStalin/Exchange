@@ -1,5 +1,6 @@
 #pragma once
-#include <iostream>
+#include <iostream>
+
 #include <cstdlib>
 
 using std::cout;
@@ -14,14 +15,17 @@ namespace ArrayTools {
 		ARRAY_LINE_NO_SPACE
 	};
 
-	void fill_int_array(int arr[], const int size) {
+	typedef unsigned short int size_t;
+
+	void fill_int(int arr[], const int size) {
+		srand(time(0));
 		for(int i = 0; i < size; i++) {
-			arr[i] = rand() % 10;
+			arr[i] = rand() % 100;
 		}
 	}
 
 	template<typename T>
-	void show_array(const T arr[], const int size, const int format = ARRAY_DEFAULT) {
+	void show(const T arr[], const int size, const int format = ARRAY_DEFAULT) {
 		if(format == ARRAY_DEFAULT) {
 			for(int i = 0; i < size; i++) {
 				cout << "I - " << (i + 1) << "\tValue: " << arr[i] << "\tAt: " << (arr+i) << endl;
@@ -42,28 +46,28 @@ namespace ArrayTools {
 	}
 	
 	template<typename T>
-	void array_copy(T *arr, T *to, int size) {
+	void copy(T *arr, T *to, int size) {
 		for(int i = 0; i < size; i++) {
 			to[i] = arr[i];
 		}
 	}
 	
 	template<typename T>
-	bool array_equals(T *arr,T *to, int size) {
+	bool equals(T *arr,T *to, int size) {
 		for(int i = 0; i < size; i++) {
 			if(arr[i] != to[i]) { return false; }
 		} return true;
 	}
 	
 	template<typename T>
-	void array_assign(T *&arr, T *&to, const int size) {
+	void assign(T *&arr, T *&to, const int size) {
 		for(int i = 0; i < size; i++) {
 			arr[i] = to[i];
 		}
 	}
 	
 	template<typename T>
-	void push_back_array(T *&arr, int &size, const T value) {
+	void push_back(T *&arr, int &size, const T value) {
 		T *newArr = new T[size + 1];
 		for(int i = 0; i < size; i++) {
 			newArr[i] = arr[i];
@@ -76,7 +80,7 @@ namespace ArrayTools {
 	}
 	
 	template<typename T>
-	void pop_back_array(T *&arr, int &size) {
+	void pop_back(T *&arr, int &size) {
 		T *newArr = new T[--size];
 		for(int i = 0; i < size; i++) {
 			newArr[i] = arr[i];
@@ -85,9 +89,9 @@ namespace ArrayTools {
 		arr = newArr;
 		newArr = NULL;
 	}
-	
+
 	template<typename T>
-	T* link_array(const T arr1[], const T arr2[], const int size1, const int size2) {
+	T* link(const T arr1[], const T arr2[], const int size1, const int size2) {
 		T *arr3 = new T[size1 + size2];
 		for(int i = 0; i < size1; i++) {
 			arr3[i] = arr1[i];
@@ -96,5 +100,28 @@ namespace ArrayTools {
 			arr3[k] = arr2[j];
 		}
 		return arr3;
-	}
+	}
+
+	template<class T>
+	void sort(T *&arr,int l)
+	{
+		for(int j = 0; j < l; j++)
+			for(int i = 0; i < l-1; i++)
+			{
+				T t = arr[i];
+				if(arr[i+1] < t) { arr[i] = arr[i+1]; arr[i+1] = t; }
+			}
+	}
+
+	template<class T>
+	void rsort(T *&arr,int l)
+	{
+		for(int j = 0; j < l; j++)
+			for(int i = 0; i < l-1; i++)
+			{
+				T t = arr[i];
+				if(arr[i+1] > t) { arr[i] = arr[i+1]; arr[i+1] = t; }
+			}
+	}
+
 }
