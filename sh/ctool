@@ -1,3 +1,0 @@
-#/bin/bash
-
-while [ "$1" ]; do mkdir "$1"; shift; done
