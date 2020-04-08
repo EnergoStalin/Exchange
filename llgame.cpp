@@ -1,4 +1,5 @@
 #include <iostream>
+#include <list>
 #include <vector>
 #include <map>
 #include <cmath>
@@ -18,7 +19,8 @@ bool is_digital_string(const char *str)
 enum AppControlCode
 {
 	EVT_EXIT = 0x000001,
-	EVT_COMMAND_NOT_FOUND
+	EVT_COMMAND_NOT_FOUND,
+	SAVE_FAILED
 } AppControlCode;
 
 struct AppConfig
@@ -29,7 +31,12 @@ struct AppConfig
 	std::string nickname2 = "Player2";
 	std::string exit_token = "e";
 	size_t count_attempts = 1;
+	size_t h_cap = 5;
 	float max = 100;
+	void save()
+	{
+		printf("%s\n","Will be added soon.");
+	}
 	void load()
 	{
 		FILE *ptr = fopen("./llgame.cfg","r");
@@ -41,12 +48,12 @@ struct AppConfig
 
 			if(!ptr) return;
 
-			fprintf(ptr, "%s\n", "#Follow this config wile syntax and everything will be okay.\n\
-				#Supported only listed below options.\
-			");
+			fprintf(ptr, "%s\n", "#Follow this config file syntax and everything will be okay.\n#Supported only listed below options.");
+			fprintf(ptr, "%s\n", "#Max max properties length is 20 if it be larger programm will terminated with segmentation fault.");
 			fprintf(ptr, "%s: %s\n", "nickname1", "Player1");
 			fprintf(ptr, "%s: %s\n", "nickname2", "Player2");
 			fprintf(ptr, "%s: %c\n", "exit_token", 'e');
+			fprintf(ptr, "%s: %d\n", "store_history", 5);
 			fprintf(ptr, "%s: %d\n", "count_attempts", 1);
 			fprintf(ptr, "%s: %d\n", "random_max", 100);
 
@@ -55,18 +62,39 @@ struct AppConfig
 			return;
 		}
 		
+		char string[256];
 		char property[60];
-		char value[40];
+		char value[20];
 
-		while(!feof(ptr))
+		while(fgets(string,256,ptr) != NULL)
 		{
-			fscanf(ptr,"%[^:]: %s\n",property,value);
-			if(property[0] == '#') continue;
+			if(strlen(string) == 0) continue; else if(string[0] == '#') continue;
+			sscanf(string,"%[^:]: %s",property,value);
 			if(strcmp(property,"nickname1") == 0) this->nickname1 = value;
 			else if(strcmp(property,"nickname2") == 0) this->nickname2 = value;
-			else if(strcmp(property,"exit_token") == 0) if(is_digital_string(value)) this->exit_token = value; else printf("%s\n", "CONFIG_PARSER::WARNING exit_token must be not numeric value.");
-			else if(strcmp(property,"count_attempts") == 0) this->count_attempts = atoi(value);
-			else this->max = atoi(value);
+			else if(strcmp(property,"store_history") == 0) {
+				this->h_cap = atoi(value);
+				if(this->h_cap > 100 || this->h_cap <= 0)
+				{
+					printf("%s\n", "CONFIG_PARSER::WARNING History cap must be in interval 1-100. Option ignored.");
+					this->h_cap = 5;
+				}
+			}
+			else if(strcmp(property,"exit_token") == 0)
+				if(is_digital_string(value))
+					this->exit_token = value;
+				else
+					printf("%s\n", "CONFIG_PARSER::WARNING exit_token must be not numeric value.");
+			else if(strcmp(property,"count_attempts") == 0)
+			{
+				this->count_attempts = atoi(value);
+				if(this->count_attempts <= 0 || this->count_attempts > 10000)
+				{
+					printf("%s\n", "CONFIG_PARSER::WARNING Attempts count must be in interval 1-10000. Option ignored.");
+					this->count_attempts = 1;
+				}
+			}
+			else if(strcmp(property,"random_max") == 0) this->max = atoi(value);
 		}
 
 		fclose(ptr);
@@ -87,17 +115,34 @@ struct HEntry
 
 std::ostream &operator<<(std::ostream &os, HEntry &h)
 {
-	os << AppConfig.nickname1 << ": " << h.p1 << "\n" << AppConfig.nickname2 << ": " << h.p2 << "\nRandom: " << h.r << "\nResult: " << h.stat << "\n";
+	os <<
+		AppConfig.nickname1 <<
+		": " <<
+		h.p1 <<
+		"\n" <<
+		AppConfig.nickname2 <<
+		": " <<
+		h.p2 <<
+		"\nRandom: " <<
+		h.r <<
+		"\nResult: " <<
+		h.stat <<
+		"\n";
 
 	return os;
 }
 
 struct AppState
 {
-	float a = 0, b = 0;
+	std::vector<float> a, b;
 	void bind(std::string name, AppStateCaller caller)
 	{
 		binds.emplace(name,caller);
+	}
+	void h_add_note(HEntry ent)
+	{
+		if(history.size() >= AppConfig.h_cap) history.pop_back();
+		history.push_front(ent);
 	}
 	void ProcessInput(std::string name)
 	{
@@ -144,7 +189,7 @@ struct AppState
 		binds.erase(name);
 	}
 	std::map<std::string,AppStateCaller> binds;
-	std::vector<HEntry> history;
+	std::list<HEntry> history;
 } AppState;
 
 int main(int argc, const char **argv)
@@ -153,22 +198,89 @@ int main(int argc, const char **argv)
 	srand((unsigned)time(NULL));
 
 	AppState.bind(AppConfig.exit_token,[]() { throw EVT_EXIT; });
-	AppState.bind("h",[]() { for(auto e : AppState.history) { std::cout << e << std::string(20,'*') << '\n'; } });
+	AppState.bind("h",[]() {
+		for(auto e : AppState.history)
+			std::cout << e << std::string(20,'*') << '\n';
+	});
+	AppState.bind("at",[]() {
+		std::cin >> AppConfig.count_attempts;
+		if(AppConfig.count_attempts <= 0 || AppConfig.count_attempts > 10000)
+		{
+			std::cout << "Attempts count must be in interval 1-10000. Set as default 1." << '\n';
+			AppConfig.count_attempts = 1;
+		}
+		else
+			std::cout << 
+				"Attemts count changed for this session to " <<
+				AppConfig.count_attempts <<
+				" to store current session setting permamently value run 's' command" << 
+				'\n';
+	});
+	AppState.bind("max",[]() {
+		std::cin >> AppConfig.max;
+		std::cout <<
+			"Max random number changed for this session to " <<
+			AppConfig.max <<
+			" to store current session setting permamently value run 's' command" <<
+			'\n';
+	});
+	AppState.bind("h_cap",[]() {
+		std::cin >> AppConfig.h_cap;
+		if(AppConfig.h_cap > 100 || AppConfig.h_cap <= 0)
+		{
+			std::cout << 
+				"History size must be in interval 1-10000. Option ignored.\n";
+		}
+		else
+			std::cout <<
+			"History stored size changed for this session to " <<
+			AppConfig.h_cap <<
+			" to store current session setting permamently value run 's' command" <<
+			'\n';
+	});
+	AppState.bind("s",[]() {
+		AppConfig.save();
+		std::cout <<
+		"Current settings saved to config file." <<
+		'\n';
+	});
 
 	try
 	{
 		while(true)
 		{
-			AppState.a = AppState.getInput(AppConfig.nickname1);			
-			AppState.b = AppState.getInput(AppConfig.nickname2);
+			AppState.a.clear();
+			AppState.b.clear();
+			for(size_t i = 0; i < AppConfig.count_attempts; i++)
+				AppState.a.push_back(AppState.getInput(AppConfig.nickname1));
+			for(size_t i = 0; i < AppConfig.count_attempts; i++)
+				AppState.b.push_back(AppState.getInput(AppConfig.nickname2));
 				
 			float r = rand() % (int)round(AppConfig.max);
 				
 			std::cout << "Random number is [" << r << "]\n";
-				
-			float da = abs(r - AppState.a);
-			float db = abs(r - AppState.b);
-			HEntry ent(AppState.a,AppState.b,r);
+			
+			float da,db;
+
+			if(AppConfig.count_attempts == 1)
+			{
+				da = abs(r - AppState.a.back());
+				db = abs(r - AppState.b.back());
+			}
+			else
+			{
+				da = abs(r - AppState.a.back());
+				db = abs(r - AppState.b.back());
+				float dat, dbt;
+				for(size_t i = 0; i <= AppConfig.count_attempts; i++) //TODO: Fix bug more than 2 attempts
+				{
+					dat = abs(r - AppState.a[i]);
+					dbt = abs(r - AppState.b[i]);
+					if(da > dat) da = dat;
+					if(db > dbt) db = dbt;
+				}
+			}
+			HEntry ent(AppState.a.back(),AppState.b.back(),r);
 				
 			if(da == db)
 			{
@@ -179,15 +291,15 @@ int main(int argc, const char **argv)
 			else if(da < db)
 			{
 				ent.stat = "[" + AppConfig.nickname1 + "] WIN";
-				std::cout << "/*.^/ [" + AppConfig.nickname1 + "] WIN WITH NUMBER (" << AppState.a << ")\n";
+				std::cout << "/*.^/ [" + AppConfig.nickname1 + "] WIN WITH NUMBER (" << AppState.a.back() << ")\n";
 			}
 			else
 			{
 				ent.stat = "[" + AppConfig.nickname2 + "] WIN";
-				std::cout << "\\^.*\\ [" + AppConfig.nickname2 + "] WIN WITH NUMBER (" << AppState.b << ")\n";
+				std::cout << "\\^.*\\ [" + AppConfig.nickname2 + "] WIN WITH NUMBER (" << AppState.b.back() << ")\n";
 			}
 
-			AppState.history.push_back(ent);
+			AppState.h_add_note(ent);
 		}
 	}
 	catch(enum AppControlCode &control)
