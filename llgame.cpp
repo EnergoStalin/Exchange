@@ -1,11 +1,11 @@
 #include <iostream>
+#include <fstream>
 #include <list>
 #include <vector>
 #include <map>
 #include <cmath>
 #include <random>
 #include <ctime>
-#include <stdio.h>
 #include <cstring>
 
 typedef void (*AppStateCaller)(void);
@@ -26,7 +26,11 @@ enum AppControlCode
 struct AppConfig
 {
 	AppConfig() {}
-	AppConfig(std::string n1, std::string n2, float max = 100, int at = 1) : nickname1(n1), nickname2(n2), count_attempts(at), max(max) {}
+	AppConfig(std::string n1, std::string n2, float max = 100, int at = 1) :
+	nickname1(n1),
+	nickname2(n2),
+	count_attempts(at),
+	max(max) {}
 	std::string nickname1 = "Player1";
 	std::string nickname2 = "Player2";
 	std::string exit_token = "e";
@@ -35,70 +39,97 @@ struct AppConfig
 	float max = 100;
 	void save()
 	{
-		printf("%s\n","Will be added soon.");
+		std::fstream fs("./llgame.cfg",std::ios::in);
+
+		if(!fs.is_open()) { std::cout << "Save failed.\n"; return; }
+
+		std::string filebuff,linebuff;
+		size_t pos;
+		while(getline(fs,linebuff,'\n'))
+		{
+			if(linebuff.length() == 0) continue; else if(linebuff.at(0) == '#') { filebuff += linebuff; continue; }
+		}
+
+
+		filebuff += "\n";
+		filebuff += "nickname1: " + this->nickname1 + "\n";
+		filebuff += "nickname2: " + this->nickname2 + "\n";
+		filebuff += "exit_token: " + this->exit_token + "\n";
+		filebuff += "h_cap: " + std::to_string(this->h_cap) + "\n";
+		filebuff += "random_max: " + std::to_string(this->max) + "\n";
+		filebuff += "count_attempts: " + std::to_string(this->count_attempts) + "\n";
+		
+		fs.close();
+		fs.open("./llgame.cfg",std::ios::trunc | std::ios::out);
+
+		fs << filebuff;
+		fs.close();
+
+
+		std::cout << "Saved successfuly.\n";
 	}
 	void load()
 	{
-		FILE *ptr = fopen("./llgame.cfg","r");
+		std::fstream of("./llgame.cfg",std::ios::in);
 
-		if(!ptr)
+		if(!of.is_open())
 		{
-			printf("%s\n", "Dont find config file creating it in same folder.");
-			ptr = fopen("./llgame.cfg","w");
+			std::cout << "Dont find config file creating it in same folder.\n";
+			of.open("./llgame.cfg",std::ios::out);
 
-			if(!ptr) return;
+			if(of.is_open()) return;
 
-			fprintf(ptr, "%s\n", "#Follow this config file syntax and everything will be okay.\n#Supported only listed below options.");
-			fprintf(ptr, "%s\n", "#Max max properties length is 20 if it be larger programm will terminated with segmentation fault.");
-			fprintf(ptr, "%s: %s\n", "nickname1", "Player1");
-			fprintf(ptr, "%s: %s\n", "nickname2", "Player2");
-			fprintf(ptr, "%s: %c\n", "exit_token", 'e');
-			fprintf(ptr, "%s: %d\n", "store_history", 5);
-			fprintf(ptr, "%s: %d\n", "count_attempts", 1);
-			fprintf(ptr, "%s: %d\n", "random_max", 100);
+			of << "#Follow this config file syntax and everything will be okay.\n#Supported only listed below options.\n";
+			of << "#Max max properties length is 20 if it be larger programm will terminated with segmentation fault.\n";
+			of << "nickname1: Player1";
+			of << "nickname2: Player2";
+			of << "exit_token: e";
+			of << "store_history: 5";
+			of << "count_attempts: 1";
+			of << "random_max: 100";
 
-			fclose(ptr);
+			of.close();
 
 			return;
 		}
 		
-		char string[256];
-		char property[60];
-		char value[20];
+		std::string buff, key, value;
 
-		while(fgets(string,256,ptr) != NULL)
+		while(getline(of,buff,'\n'))
 		{
-			if(strlen(string) == 0) continue; else if(string[0] == '#') continue;
-			sscanf(string,"%[^:]: %s",property,value);
-			if(strcmp(property,"nickname1") == 0) this->nickname1 = value;
-			else if(strcmp(property,"nickname2") == 0) this->nickname2 = value;
-			else if(strcmp(property,"store_history") == 0) {
-				this->h_cap = atoi(value);
+			if(buff.length() == 0 || buff.at(0) == '#') continue;
+			size_t pos = buff.find(':');
+			key = buff.substr(0,pos);
+			value = buff.substr(pos+2);
+			if(key == "nickname1") this->nickname1 = value;
+			else if(key == "nickname2") this->nickname2 = value;
+			else if(key == "store_history") {
+				this->h_cap = std::stoi(value);
 				if(this->h_cap > 100 || this->h_cap <= 0)
 				{
-					printf("%s\n", "CONFIG_PARSER::WARNING History cap must be in interval 1-100. Option ignored.");
+					std::cout << "CONFIG_PARSER::WARNING History cap must be in interval 1-100. Option ignored.\n";
 					this->h_cap = 5;
 				}
 			}
-			else if(strcmp(property,"exit_token") == 0)
-				if(is_digital_string(value))
+			else if(key == "exit_token")
+				if(is_digital_string(value.c_str()))
 					this->exit_token = value;
 				else
-					printf("%s\n", "CONFIG_PARSER::WARNING exit_token must be not numeric value.");
-			else if(strcmp(property,"count_attempts") == 0)
+					std::cout << "CONFIG_PARSER::WARNING exit_token must be not numeric value.\n";
+			else if(key == "count_attempts")
 			{
-				this->count_attempts = atoi(value);
+				this->count_attempts = std::stoi(value);
 				if(this->count_attempts <= 0 || this->count_attempts > 10000)
 				{
-					printf("%s\n", "CONFIG_PARSER::WARNING Attempts count must be in interval 1-10000. Option ignored.");
+					std::cout << "CONFIG_PARSER::WARNING Attempts count must be in interval 1-10000. Option ignored.\n";
 					this->count_attempts = 1;
 				}
 			}
-			else if(strcmp(property,"random_max") == 0) this->max = atoi(value);
+			else if(key == "random_max") this->max = std::stoi(value);
 		}
 
-		fclose(ptr);
-		printf("%s\n", "Loaded config from llgame.cfg");
+		of.close();
+		std::cout << "Loaded config from llgame.cfg\n";
 	}
 	
 } AppConfig;
@@ -203,6 +234,7 @@ int main(int argc, const char **argv)
 			std::cout << e << std::string(20,'*') << '\n';
 	});
 	AppState.bind("at",[]() {
+		std::cout << "[at] Prompt: ";
 		std::cin >> AppConfig.count_attempts;
 		if(AppConfig.count_attempts <= 0 || AppConfig.count_attempts > 10000)
 		{
@@ -213,18 +245,20 @@ int main(int argc, const char **argv)
 			std::cout << 
 				"Attemts count changed for this session to " <<
 				AppConfig.count_attempts <<
-				" to store current session setting permamently value run 's' command" << 
+				" to save current session setting run 's' command" << 
 				'\n';
 	});
 	AppState.bind("max",[]() {
+		std::cout << "[max] Prompt: ";
 		std::cin >> AppConfig.max;
 		std::cout <<
 			"Max random number changed for this session to " <<
 			AppConfig.max <<
-			" to store current session setting permamently value run 's' command" <<
+			" to save current session setting run 's' command" <<
 			'\n';
 	});
 	AppState.bind("h_cap",[]() {
+		std::cout << "[h_cap] Prompt: ";
 		std::cin >> AppConfig.h_cap;
 		if(AppConfig.h_cap > 100 || AppConfig.h_cap <= 0)
 		{
@@ -235,14 +269,11 @@ int main(int argc, const char **argv)
 			std::cout <<
 			"History stored size changed for this session to " <<
 			AppConfig.h_cap <<
-			" to store current session setting permamently value run 's' command" <<
+			" to save current session setting run 's' command" <<
 			'\n';
 	});
 	AppState.bind("s",[]() {
 		AppConfig.save();
-		std::cout <<
-		"Current settings saved to config file." <<
-		'\n';
 	});
 
 	try
@@ -272,31 +303,31 @@ int main(int argc, const char **argv)
 				da = abs(r - AppState.a.back());
 				db = abs(r - AppState.b.back());
 				float dat, dbt;
-				for(size_t i = 0; i <= AppConfig.count_attempts; i++) //TODO: Fix bug more than 2 attempts
+				for(size_t i = 0; i < AppConfig.count_attempts; i++)
 				{
 					dat = abs(r - AppState.a[i]);
 					dbt = abs(r - AppState.b[i]);
-					if(da > dat) da = dat;
-					if(db > dbt) db = dbt;
+					if(da > dat) { /*std::cout << "da > dat\t" << da << '>' << dat << '\n';*/ da = dat; }
+					if(db > dbt) { /*std::cout << "db > dbt\t" << db << '>' << dbt << '\n';*/ db = dbt; }
 				}
 			}
-			HEntry ent(AppState.a.back(),AppState.b.back(),r);
+			HEntry ent((r - da),(r - db),r);
 				
 			if(da == db)
 			{
 				ent.stat = "--draw--";
-				std::cout << "WoW It's a --draw-- \\(" << da << "_" << db << ")/\n";
+				std::cout << "WoW It's a --draw-- \\(" << (r - da) << "_" << (r - db) << ")/\n";
 
 			}
 			else if(da < db)
 			{
 				ent.stat = "[" + AppConfig.nickname1 + "] WIN";
-				std::cout << "/*.^/ [" + AppConfig.nickname1 + "] WIN WITH NUMBER (" << AppState.a.back() << ")\n";
+				std::cout << "/*.^/ [" + AppConfig.nickname1 + "] WIN WITH NUMBER (" << (r - da) << ")\n";
 			}
 			else
 			{
 				ent.stat = "[" + AppConfig.nickname2 + "] WIN";
-				std::cout << "\\^.*\\ [" + AppConfig.nickname2 + "] WIN WITH NUMBER (" << AppState.b.back() << ")\n";
+				std::cout << "\\^.*\\ [" + AppConfig.nickname2 + "] WIN WITH NUMBER (" << (r - db) << ")\n";
 			}
 
 			AppState.h_add_note(ent);
