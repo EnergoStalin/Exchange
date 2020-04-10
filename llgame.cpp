@@ -26,7 +26,11 @@ enum AppControlCode
 struct AppConfig
 {
 	AppConfig() {}
-	AppConfig(std::string n1, std::string n2, float max = 100, int at = 1) : nickname1(n1), nickname2(n2), count_attempts(at), max(max) {}
+	AppConfig(std::string n1, std::string n2, float max = 100, int at = 1) :
+	nickname1(n1),
+	nickname2(n2),
+	count_attempts(at),
+	max(max) {}
 	std::string nickname1 = "Player1";
 	std::string nickname2 = "Player2";
 	std::string exit_token = "e";
@@ -299,7 +303,7 @@ int main(int argc, const char **argv)
 				da = abs(r - AppState.a.back());
 				db = abs(r - AppState.b.back());
 				float dat, dbt;
-				for(size_t i = 0; i < AppConfig.count_attempts; i++) //TODO: Fix bug more than 2 attempts
+				for(size_t i = 0; i < AppConfig.count_attempts; i++)
 				{
 					dat = abs(r - AppState.a[i]);
 					dbt = abs(r - AppState.b[i]);
