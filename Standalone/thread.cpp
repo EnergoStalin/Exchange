@@ -2,22 +2,25 @@
 #include <thread>
 #include <chrono>
 
-using namespace std;
+#define COUNT 10
 
-void doWork(int a, int b) {
-	while(true) {
-		cout<< "Thread id: " << this_thread::get_id() << "\tdoWork" << endl;
-		this_thread::sleep_for(chrono:: milliseconds (1000));
+void DoWork(int a, int b) {
+	int c = a + b;
+	for (size_t i = 0; i < c; i++)
+	{
+		std::cout << "Thread id: " << std::this_thread::get_id() << "\tdoWork()" << std::endl;
+		std::this_thread::sleep_for(std::chrono::milliseconds (1000));
 	}
 }
 
 int main() {
-	thread th(doWork,3,4);
-	while(true) {
-		cout<< "Thread id: " << this_thread::get_id() << "\tmain" << endl;
-		this_thread::sleep_for(chrono:: milliseconds (500));
+	std::thread thr(DoWork, COUNT, COUNT);
+	for (size_t i = 0; i < COUNT; i++)
+	{
+		std::cout << "Thread id: " << std::this_thread::get_id() << "\tmain()" << std::endl;
+		std::this_thread::sleep_for(std::chrono::milliseconds (500));
 	}
-	th.join();
+	thr.join();
 				
 	return 0;
 }
